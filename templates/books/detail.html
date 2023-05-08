@@ -1,0 +1,63 @@
+{% extends 'main.html' %}
+{% load crispy_forms_tags %}
+{% block title %}Book page{% endblock title %}
+
+{% block content %}
+
+<div class="row bm-4">
+    <div class="col-5">
+<img alt="cover image" src="{{ book.cover_picture.url }}">
+    </div>
+
+        <div class="col-6 ">
+            <h2>{{ book.title }}</h2>
+
+            <span class="fw-bolder">
+                Authored by :
+                    {% for book_author in book.bookauthor_set.all %}
+                            {{ book_author.author.full_name }}
+                    {% endfor %}
+            </span>
+
+                <p>
+        {{ book.description }}
+                </p>
+        </div>
+</div>
+
+    <div class="row mb-4">
+        <div class="col-6">
+         {% if request.user.is_authenticated %}
+            <form method="post" action="{% url 'reviews' book.id %}"> {% csrf_token %}
+            {{ review_form | crispy }}
+                <button class="btn btn-success">Add a comment</button>
+                {% else %}
+
+            </form>
+                    {% endif %}
+        </div>
+    </div>
+
+    {% if book.bookreview_set.exists %}
+    <h4>Reviews</h4><hr>
+
+    {% for review in book.bookreview_set.all %}
+        <div class="row mb-3 ">
+                <div class="col-2">
+                    <img class="profile-pic" src="{{ review.user.profile_pic.url }}">
+                </div>
+
+                <div class="col-7 mx-5">
+                    <b class="fs-4 fw-bold">{{ review.user.username }}</b> rated it {{ review.stars_given }} stars <span class="fw-light">{{ review.created_at }}</span>
+
+                        {% if review.user == request.user %}
+                    <a href="{% url 'edit' book.id review.id %}"><i class="bi bi-pen-fill"></i></a>
+                   <a href="{% url 'delete' book.id review.id %}"><i class="bi bi-trash"></i></a>
+                      {% endif %}
+
+                <p class="fst-italic">{{ review.comment }}</p>
+            </div>
+        </div>
+    {% endfor %}
+    {% endif %}
+{% endblock content %}
